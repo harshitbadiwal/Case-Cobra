@@ -23,7 +23,7 @@ interface DesignConfigurationProps {
   imageUrl: string;
   imageDimensions: { width: number; height: number };
 }
-import {saveConfig as _saveConfig} from "./action"
+import { saveConfig as _saveConfig, SaveConfigArgs } from "./action";
 import { color } from "framer-motion";
 import { useRouter } from "next/navigation";
 const DesignConfigurator = ({
@@ -34,30 +34,22 @@ const DesignConfigurator = ({
 
   const router = useRouter()
   const { toast } = useToast()
-  // const { mutate: saveConfig } = useMutation({
-  //   mutationKey: ["save-config"],
-
-  //   mutationFn: async (args: args) => {
-  //     await Promise.all([saveConfiguration(), _saveConfig(args)]);
-  //   },
-  // });
-  const saveConfig = async(args) => {
-  // console.log("args",args)
-    try {
-      const res2 = await saveConfiguration()
-      const res = await _saveConfig(args)
-      console.log("res",res)
-      router.push(`/configure/preview?id=${configId}`)
-    }
-    catch (err) {
-      console.log("err", err)
+  const { mutate: saveConfig, isPending } = useMutation({
+    mutationKey: ["save-config"],
+    mutationFn: async (args: SaveConfigArgs) => {
+      await Promise.all([saveConfiguration(), _saveConfig(args)]);
+    },
+    onError: () => {
       toast({
         title: "Something went wrong",
-        description: 'There was an error on our end. Please try again',
-        variant: "destructive"
-      })
-    }
-}
+        description: "There was an error on our end. Please try again.",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
+      router.push(`/configure/preview?id=${configId}`);
+    },
+  });
   const [options, setOptions] = useState<{
     color: (typeof COLORS)[number];
     model: (typeof MODELS.options)[number];
@@ -125,10 +117,10 @@ const phoneCaseRef = useRef<HTMLDivElement>(null)
     catch (err) {
       console.log("err", err)
       toast({
-        title:"SomeThing went wrong",
-        discription:"There was a problem saving your config, please try again.",
-        variant:"destructive"
-      })
+        title: "SomeThing went wrong",
+        description:"There was a problem saving your config, please try again.",
+        variant: "destructive",
+      });
     }
   }
 
@@ -296,7 +288,6 @@ const phoneCaseRef = useRef<HTMLDivElement>(null)
                   ({ name, options: selectableOptons }) => (
                     <RadioGroup
                       key={name}
-                      value={options[name]}
                       onChange={(val) => {
                         setOptions((prev) => ({
                           ...prev,
@@ -370,13 +361,22 @@ const phoneCaseRef = useRef<HTMLDivElement>(null)
                     100
                 )}
               </p>
-              <Button onClick={() => saveConfig({
-                configId,
-                color: options.color.value,
-                finish: options.finish.value,
-                material: options.material.value,
-                model : options.model.value
-              })} className="w-full" size="sm">
+              <Button
+                isLoading={isPending}
+                disabled={isPending}
+                loadingText="Saving"
+                onClick={() =>
+                  saveConfig({
+                    configId,
+                    color: options.color.value,
+                    finish: options.finish.value,
+                    material: options.material.value,
+                    model: options.model.value,
+                  })
+                }
+                size="sm"
+                className="w-full"
+              >
                 Continue
                 <ArrowRight className="h-4 w-4 ml-1.5 inline" />
               </Button>

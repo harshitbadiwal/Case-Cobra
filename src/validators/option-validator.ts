@@ -45,19 +45,19 @@ export const MATERIALS = {
   name: "material",
   options: [
     {
-      label: "Silicon",
-      value: "silicon",
+      label: "Silicone",
+      value: "silicone",
       description: undefined,
       price: PRODUCT_PRICES.material.silicone,
     },
     {
       label: "Soft Polycarbonate",
       value: "polycarbonate",
-      description: "Scratch-resistance coating",
+      description: "Scratch-resistant coating",
       price: PRODUCT_PRICES.material.polycarbonate,
     },
   ],
-};
+} as const;
 
 export const FINISHES = {
   name: "finish",
@@ -75,4 +75,4 @@ export const FINISHES = {
       price: PRODUCT_PRICES.finish.textured,
     },
   ],
-};
+} as const;
